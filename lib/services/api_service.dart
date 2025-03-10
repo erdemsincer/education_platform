@@ -3,18 +3,18 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
   final Dio _dio = Dio(BaseOptions(
-    baseUrl: "https://localhost:7028/api", // API adresini güncelle
-    connectTimeout: Duration(seconds: 10), // Bağlantı süresi sınırı
-    receiveTimeout: Duration(seconds: 10),
+    baseUrl: "http://10.0.2.2:7028/api",
+    connectTimeout: Duration(seconds: 60),
+    receiveTimeout: Duration(seconds: 60),
   ));
 
-  // Kullanıcı giriş yaparsa token'ı kaydet
+
+
   Future<void> _saveToken(String token) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString("authToken", token);
   }
 
-  // Kullanıcı giriş yap
   Future<String?> login(String email, String password) async {
     try {
       var response = await _dio.post(
@@ -25,7 +25,7 @@ class ApiService {
       if (response.statusCode == 200 && response.data.containsKey("token")) {
         String token = response.data["token"];
         await _saveToken(token);
-        return token; // Token döndürüyoruz
+        return token;
       } else {
         print("Login Failed: ${response.statusMessage}");
         return null;
@@ -36,7 +36,6 @@ class ApiService {
     }
   }
 
-  // Kullanıcı kayıt ol
   Future<bool> register(String fullName, String email, String password) async {
     try {
       var response = await _dio.post(
@@ -44,19 +43,13 @@ class ApiService {
         data: {"fullName": fullName, "email": email, "password": password},
       );
 
-      if (response.statusCode == 200) {
-        return true;
-      } else {
-        print("Register Failed: ${response.statusMessage}");
-        return false;
-      }
+      return response.statusCode == 200;
     } catch (e) {
       print("Register Error: $e");
       return false;
     }
   }
 
-  // Kullanıcı profilini getir
   Future<Map<String, dynamic>?> getUserProfile() async {
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -72,19 +65,13 @@ class ApiService {
         options: Options(headers: {"Authorization": "Bearer $token"}),
       );
 
-      if (response.statusCode == 200) {
-        return response.data;
-      } else {
-        print("User Profile Fetch Failed: ${response.statusMessage}");
-        return null;
-      }
+      return response.statusCode == 200 ? response.data : null;
     } catch (e) {
       print("User Profile Error: $e");
       return null;
     }
   }
 
-  // Çıkış yap
   Future<void> logout() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.remove("authToken");
