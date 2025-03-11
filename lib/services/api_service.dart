@@ -71,6 +71,71 @@ class ApiService {
       return null;
     }
   }
+  Future<List<dynamic>> getDiscussions() async {
+    try {
+      var response = await _dio.get("/Discussion/GetAll");  // API endpoint'i
+      if (response.statusCode == 200) {
+        return response.data;  // API'den alınan tartışmaları döndür
+      } else {
+        print("Error: ${response.statusMessage}");
+        return [];
+      }
+    } catch (e) {
+      print("API Error: $e");
+      return [];
+    }
+  }
+  Future<Map<String, dynamic>?> getDiscussionDetail(int discussionId) async {
+    try {
+      var response = await _dio.get("/Discussion/GetDiscussionDetailWithReplies/$discussionId"); // API endpoint
+      if (response.statusCode == 200) {
+        return response.data;  // Tartışma detaylarını döndürüyoruz
+      } else {
+        print("Error: ${response.statusMessage}");
+        return null;
+      }
+    } catch (e) {
+      print("API Error: $e");
+      return null;
+    }
+  }
+  Future<bool> postReply(int discussionId, String message) async {
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? token = prefs.getString("authToken");
+
+      // Kullanıcı ID'sini SharedPreferences'ten alıyoruz
+      String? userId = prefs.getString("userId");
+
+      if (token == null || userId == null) {
+        print("User not logged in.");
+        return false;
+      }
+
+      var response = await _dio.post(
+        "/DiscussionReply",  // Yorum eklemek için API endpoint
+        data: {
+          "discussionId": discussionId,
+          "message": message,
+          "userId": userId,  // Kullanıcı ID'sini de ekliyoruz
+        },
+        options: Options(headers: {"Authorization": "Bearer $token"}),
+      );
+
+      if (response.statusCode == 200) {
+        return true;  // Başarılı
+      } else {
+        print("Error Response: ${response.data}");
+        print("Error Status Code: ${response.statusCode}");
+        print("Error Message: ${response.statusMessage}");
+        return false;  // Hata durumu
+      }
+    } catch (e) {
+      print("Error posting reply: $e");
+      return false;
+    }
+  }
+
 
   Future<void> logout() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
