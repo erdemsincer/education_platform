@@ -11,6 +11,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String userEmail = "";
   String profileImage = "https://via.placeholder.com/150";
   List<String> userRoles = [];
+  String userId = "";  // Adding userId to store and display
 
   @override
   void initState() {
@@ -25,6 +26,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       userEmail = prefs.getString("userEmail") ?? "";
       profileImage = prefs.getString("profileImage") ?? "https://via.placeholder.com/150";
       userRoles = prefs.getStringList("userRoles") ?? [];
+      userId = prefs.getString("userId") ?? "";  // Load userId from SharedPreferences
     });
   }
 
@@ -50,6 +52,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             _buildProfileItem(Icons.person, "Ad Soyad", userName),
             _buildProfileItem(Icons.email, "E-Posta", userEmail),
             _buildProfileItem(Icons.security, "Roller", userRoles.join(", ")),
+            _buildProfileItem(Icons.account_circle, "Kullanıcı ID", userId),  // Display userId here
           ],
         ),
       ),

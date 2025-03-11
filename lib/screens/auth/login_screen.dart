@@ -26,21 +26,24 @@ class _LoginScreenState extends State<LoginScreen> {
       _errorMessage = null;
     });
 
-    // **API'den token al**
+    // API'den token al
     String? token = await apiService.login(emailController.text, passwordController.text);
 
     if (token != null) {
-      Map<String, dynamic> decodedToken = JwtDecoder.decode(token); // **Token decode et**
+      // Token'ı decode et
+      Map<String, dynamic> decodedToken = JwtDecoder.decode(token);
       String fullName = decodedToken["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"] ?? "Kullanıcı";
       String email = decodedToken["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"] ?? "";
-      String profileImage = decodedToken["ProfileImage"] ??
-          "https://via.placeholder.com/150"; // Eğer profil resmi yoksa varsayılan resim
+      String profileImage = decodedToken["ProfileImage"] ?? "https://via.placeholder.com/150"; // Varsayılan profil resmi
+      String userId = decodedToken["userId"]?.toString() ?? ""; // Kullanıcı ID'sini alıyoruz (null olursa boş string)
 
+      // SharedPreferences'te verileri kaydediyoruz
       SharedPreferences prefs = await SharedPreferences.getInstance();
-      await prefs.setString("token", token); // **Token'ı kaydet**
-      await prefs.setString("userName", fullName); // **Kullanıcı adını kaydet**
+      await prefs.setString("token", token); // Token'ı kaydet
+      await prefs.setString("userName", fullName); // Kullanıcı adını kaydet
       await prefs.setString("userEmail", email);
       await prefs.setString("profileImage", profileImage);
+      await prefs.setString("userId", userId); // Kullanıcı ID'sini kaydediyoruz
 
       Navigator.pushReplacement(
         context,
@@ -130,9 +133,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Widget _buildTextField(
-      TextEditingController controller, String label, IconData icon,
-      {bool isPassword = false}) {
+  Widget _buildTextField(TextEditingController controller, String label, IconData icon, {bool isPassword = false}) {
     return TextFormField(
       controller: controller,
       obscureText: isPassword,
