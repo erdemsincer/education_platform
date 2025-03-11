@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '/screens/auth/login_screen.dart';
+import '/screens/profile/profile_screen.dart';  // Profil sayfasını dahil et
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -66,7 +67,14 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
             ),
-            ListTile(leading: Icon(Icons.person), title: Text("Profil"), onTap: () {}),
+            ListTile(
+              leading: Icon(Icons.person),
+              title: Text("Profil"),
+              onTap: () {
+                // Profil sayfasına yönlendir
+                Navigator.push(context, MaterialPageRoute(builder: (context) => ProfileScreen()));
+              },
+            ),
             ListTile(leading: Icon(Icons.settings), title: Text("Ayarlar"), onTap: () {}),
             ListTile(leading: Icon(Icons.logout), title: Text("Çıkış Yap"), onTap: _logout),
           ],
