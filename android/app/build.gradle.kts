@@ -28,7 +28,7 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = true
-             // "release" signingConfig eklemeyi düşünün
+
         }
         debug {
             isMinifyEnabled = true
