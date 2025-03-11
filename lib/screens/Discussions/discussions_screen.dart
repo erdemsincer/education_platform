@@ -19,16 +19,21 @@ class _DiscussionsScreenState extends State<DiscussionsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Tartışmalar')),
+      backgroundColor: Colors.grey[50],  // Sayfa arka plan rengini yumuşatıyoruz
+      appBar: AppBar(
+        title: Text('Tartışmalar', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.blueAccent,
+        elevation: 0,
+      ),
       body: FutureBuilder<List<dynamic>>(
         future: _discussions,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());  // Yükleniyor göstergesi
           } else if (snapshot.hasError) {
-            return Center(child: Text('Hata: ${snapshot.error}'));
+            return Center(child: Text('Hata: ${snapshot.error}', style: TextStyle(fontSize: 18, color: Colors.red)));
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return Center(child: Text('Hiç tartışma bulunamadı.'));
+            return Center(child: Text('Hiç tartışma bulunamadı.', style: TextStyle(fontSize: 18)));
           } else {
             List<dynamic> discussions = snapshot.data!;
             return ListView.builder(
@@ -36,13 +41,40 @@ class _DiscussionsScreenState extends State<DiscussionsScreen> {
               itemBuilder: (context, index) {
                 var discussion = discussions[index];
                 return Card(
-                  margin: EdgeInsets.all(10),
+                  margin: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  elevation: 4,
                   child: ListTile(
-                    title: Text(discussion['title']),
-                    subtitle: Text(
-                      'Yazan: ${discussion['userFullName']} - ${discussion['createdAt']}',
+                    contentPadding: EdgeInsets.all(16),
+                    title: Text(
+                      discussion['title'],
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.blueAccent,
+                      ),
                     ),
-                    trailing: Text('Cevap: ${discussion['replyCount']}'),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Yazan: ${discussion['userFullName']}',
+                          style: TextStyle(fontSize: 14, color: Colors.black54),
+                        ),
+                        SizedBox(height: 5),
+                        Text(
+                          'Tarih: ${discussion['createdAt']}',
+                          style: TextStyle(fontSize: 12, color: Colors.black38),
+                        ),
+                      ],
+                    ),
+                    trailing: Chip(
+                      label: Text('Cevap: ${discussion['replyCount']}'),
+                      backgroundColor: Colors.green[300],
+                      labelStyle: TextStyle(color: Colors.white),
+                    ),
                     onTap: () {
                       // Tartışma detayına yönlendir
                       Navigator.push(
