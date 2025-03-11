@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '/screens/auth/login_screen.dart';
 import '/screens/profile/profile_screen.dart';  // Profil sayfasını dahil et
+import '/screens/Discussions/discussions_screen.dart';  // Tartışmalar sayfasını dahil et
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -25,8 +26,7 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       userName = prefs.getString("userName") ?? "Kullanıcı";
       userEmail = prefs.getString("userEmail") ?? "";
-      profileImage = prefs.getString("profileImage") ??
-          "https://via.placeholder.com/150"; // Eğer profil resmi yoksa varsayılan bir resim
+      profileImage = prefs.getString("profileImage") ?? "https://via.placeholder.com/150"; // Varsayılan profil resmi
       userRoles = prefs.getStringList("userRoles") ?? [];
     });
   }
@@ -73,6 +73,14 @@ class _HomeScreenState extends State<HomeScreen> {
               onTap: () {
                 // Profil sayfasına yönlendir
                 Navigator.push(context, MaterialPageRoute(builder: (context) => ProfileScreen()));
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.chat),
+              title: Text("Tartışmalar"),  // Tartışmalar menüsünü ekledik
+              onTap: () {
+                // Tartışmalar sayfasına yönlendir
+                Navigator.push(context, MaterialPageRoute(builder: (context) => DiscussionsScreen()));
               },
             ),
             ListTile(leading: Icon(Icons.settings), title: Text("Ayarlar"), onTap: () {}),
