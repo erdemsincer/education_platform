@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '/services/api_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';  // SharedPreferences import'u
 
 class DiscussionDetailScreen extends StatefulWidget {
   final int discussionId;
@@ -33,6 +34,20 @@ class _DiscussionDetailScreenState extends State<DiscussionDetailScreen> {
     });
 
     try {
+      // Kullanıcı ID'sini SharedPreferences'ten alıyoruz
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? userId = prefs.getString("userId");
+
+      if (userId == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Kullanıcı ID bulunamadı. Lütfen giriş yapın.')),
+        );
+        setState(() {
+          _isSubmitting = false;
+        });
+        return;
+      }
+
       bool success = await ApiService().postReply(widget.discussionId, message);
 
       setState(() {
@@ -82,7 +97,7 @@ class _DiscussionDetailScreenState extends State<DiscussionDetailScreen> {
             String userFullName = discussion['userFullName'] ?? 'Yazar Bilgisi Yok';
             List<dynamic> replies = discussion['replies'] ?? [];
 
-            return Padding(
+            return SingleChildScrollView(  // Kaydırılabilir yapıyoruz
               padding: EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -98,6 +113,7 @@ class _DiscussionDetailScreenState extends State<DiscussionDetailScreen> {
                   SizedBox(height: 10),
                   ListView.builder(
                     shrinkWrap: true,
+                    physics: NeverScrollableScrollPhysics(), // Listeyi kaydırma dışı bırakıyoruz
                     itemCount: replies.length,
                     itemBuilder: (context, index) {
                       var reply = replies[index];
@@ -105,8 +121,12 @@ class _DiscussionDetailScreenState extends State<DiscussionDetailScreen> {
                       String replyUserFullName = reply['userFullName'] ?? 'Bilgi Yok';
                       return Card(
                         margin: EdgeInsets.symmetric(vertical: 5),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 4,
                         child: ListTile(
-                          title: Text(replyUserFullName),
+                          title: Text(replyUserFullName, style: TextStyle(fontWeight: FontWeight.bold)),
                           subtitle: Text(message),
                         ),
                       );
@@ -119,15 +139,20 @@ class _DiscussionDetailScreenState extends State<DiscussionDetailScreen> {
                     decoration: InputDecoration(
                       labelText: 'Yanıtınızı yazın...',
                       border: OutlineInputBorder(),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                     ),
                     maxLines: 4,
                   ),
                   SizedBox(height: 10),
                   ElevatedButton(
                     onPressed: _isSubmitting ? null : _postReply,
+                    style: ElevatedButton.styleFrom(
+                      minimumSize: Size(double.infinity, 50),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
                     child: _isSubmitting
-                        ? CircularProgressIndicator()
-                        : Text('Yorumu Gönder'),
+                        ? CircularProgressIndicator(color: Colors.white)
+                        : Text('Yorumu Gönder', style: TextStyle(fontSize: 16)),
                   ),
                 ],
               ),
