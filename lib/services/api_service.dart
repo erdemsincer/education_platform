@@ -1,20 +1,30 @@
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';  // JWT Decode için
 
 class ApiService {
   final Dio _dio = Dio(BaseOptions(
-    baseUrl: "http://10.0.2.2:7028/api",
+    baseUrl: "http://10.0.2.2:7028/api",  // API base URL'si
     connectTimeout: Duration(seconds: 60),
     receiveTimeout: Duration(seconds: 60),
   ));
 
-
-
+  // Token'ı SharedPreferences'te sakla
   Future<void> _saveToken(String token) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString("authToken", token);
   }
 
+  // Kullanıcı ID'sini SharedPreferences'e kaydetme
+  Future<void> _saveUserId(String userId) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString("userId", userId);  // Kullanıcı ID'sini kaydediyoruz
+
+    // Debug: Kaydedilen userId'yi kontrol et
+    print("Saved User ID: $userId");
+  }
+
+  // Giriş işlemi
   Future<String?> login(String email, String password) async {
     try {
       var response = await _dio.post(
@@ -24,7 +34,23 @@ class ApiService {
 
       if (response.statusCode == 200 && response.data.containsKey("token")) {
         String token = response.data["token"];
+
+        // Token'ı decode ediyoruz ve userId'yi alıyoruz
+        Map<String, dynamic> decodedToken = JwtDecoder.decode(token);
+        String userId = decodedToken["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"] ?? "";  // "nameidentifier" claim'ini alıyoruz
+
+        // Debug: Kullanıcı ID'sini kontrol et
+        print("User ID from Login: $userId");
+
+        // Token ve userId'yi kaydediyoruz
         await _saveToken(token);
+        await _saveUserId(userId);  // Kullanıcı ID'sini kaydediyoruz
+
+        // Debug: Kaydedilen bilgileri kontrol et
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        String? savedUserId = prefs.getString("userId");
+        print("Saved User ID from SharedPreferences: $savedUserId");
+
         return token;
       } else {
         print("Login Failed: ${response.statusMessage}");
@@ -36,6 +62,8 @@ class ApiService {
     }
   }
 
+
+  // Kullanıcı kaydı işlemi
   Future<bool> register(String fullName, String email, String password) async {
     try {
       var response = await _dio.post(
@@ -50,6 +78,7 @@ class ApiService {
     }
   }
 
+  // Kullanıcı profilini al
   Future<Map<String, dynamic>?> getUserProfile() async {
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -71,6 +100,8 @@ class ApiService {
       return null;
     }
   }
+
+  // Tartışmaları al
   Future<List<dynamic>> getDiscussions() async {
     try {
       var response = await _dio.get("/Discussion/GetAll");  // API endpoint'i
@@ -85,6 +116,8 @@ class ApiService {
       return [];
     }
   }
+
+  // Tartışma detaylarını al
   Future<Map<String, dynamic>?> getDiscussionDetail(int discussionId) async {
     try {
       var response = await _dio.get("/Discussion/GetDiscussionDetailWithReplies/$discussionId"); // API endpoint
@@ -99,18 +132,36 @@ class ApiService {
       return null;
     }
   }
+
+  // Yorum gönderme (DiscussionReply API)
   Future<bool> postReply(int discussionId, String message) async {
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String? token = prefs.getString("authToken");
 
-      // Kullanıcı ID'sini SharedPreferences'ten alıyoruz
-      String? userId = prefs.getString("userId");
+      // Debug: Token'ı kontrol et
+      print("Token from SharedPreferences: $token");
 
-      if (token == null || userId == null) {
+      if (token == null) {
         print("User not logged in.");
         return false;
       }
+
+      // Token'ı decode ediyoruz ve userId'yi alıyoruz
+      Map<String, dynamic> decodedToken = JwtDecoder.decode(token);
+      String userId = decodedToken["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"] ?? "";  // "nameidentifier" claim'ini alıyoruz
+
+      // Debug: Kullanıcı ID'sini kontrol et
+      print("User ID from Token: $userId");
+
+      if (userId.isEmpty) {
+        print("User ID is empty.");
+        return false;
+      }
+
+      // Gönderilecek veriyi yazdırıyoruz
+      print("Posting reply with:");
+      print("discussionId: $discussionId, message: $message, userId: $userId");
 
       var response = await _dio.post(
         "/DiscussionReply",  // Yorum eklemek için API endpoint
@@ -137,9 +188,11 @@ class ApiService {
   }
 
 
+  // Çıkış yap
   Future<void> logout() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.remove("authToken");
+    await prefs.remove("userId");  // Kullanıcı ID'sini de temizliyoruz
     print("User logged out successfully.");
   }
 }
