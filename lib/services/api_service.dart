@@ -186,6 +186,134 @@ class ApiService {
       return false;
     }
   }
+  Future<List<dynamic>> getMyDiscussions() async {
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? token = prefs.getString("authToken");
+
+      if (token == null) {
+        print("User not logged in.");
+        return [];
+      }
+
+      // JWT token'ı decode ediyoruz ve userId'yi alıyoruz
+      Map<String, dynamic> decodedToken = JwtDecoder.decode(token);
+      String userId = decodedToken["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"] ?? "";
+
+      // Debug: userId'yi kontrol et
+      print("Decoded User ID: $userId");
+
+      var response = await _dio.get(
+        "/Discussion/User/$userId",  // Kullanıcıya ait tartışmaları almak için API endpoint'i
+        options: Options(
+          headers: {
+            "Authorization": "Bearer $token",  // Bearer token ile
+          },
+        ),
+      );
+
+      if (response.statusCode == 200) {
+        return response.data;  // Tartışmalar başarılı bir şekilde alındı
+      } else {
+        print("Error: ${response.statusMessage}");
+        return [];
+      }
+    } catch (e) {
+      print("Error: $e");
+      return [];
+    }
+  }
+  Future<bool> createDiscussion(String title, String content) async {
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? token = prefs.getString("authToken");
+
+      if (token == null) {
+        print("User not logged in.");
+        return false;
+      }
+
+      // JWT token'ı decode ediyoruz ve userId'yi alıyoruz
+      Map<String, dynamic> decodedToken = JwtDecoder.decode(token);
+      String userId = decodedToken["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"] ?? "";
+
+      // Debug: userId'yi kontrol et
+      print("Decoded User ID: $userId");
+
+      // API request to create the discussion
+      var response = await _dio.post(
+        "/Discussion",  // API endpoint
+        data: {
+          "title": title,
+          "content": content,
+          "userId": int.parse(userId),  // userId'yi int olarak gönderiyoruz
+        },
+        options: Options(
+          headers: {
+            "Authorization": "Bearer $token",  // Bearer token ile
+          },
+        ),
+      );
+
+      if (response.statusCode == 200) {
+        print("Discussion created successfully.");
+        return true;  // Başarılı
+      } else {
+        print("Error: ${response.statusMessage}");
+        return false;  // Hata durumunda
+      }
+    } catch (e) {
+      print("Error: $e");
+      return false;  // Error handling
+    }
+  }
+  Future<List<dynamic>> getAllResources() async {
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? token = prefs.getString("authToken");
+
+      if (token == null) {
+        print("User not logged in.");
+        return [];
+      }
+
+      // JWT token'ı decode ediyoruz ve userId'yi alıyoruz
+      Map<String, dynamic> decodedToken = JwtDecoder.decode(token);
+      String userId = decodedToken["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"] ?? "";
+
+      var response = await _dio.get(
+        "/Resource/GetResourceDetails",  // API endpoint to get all resources
+        options: Options(
+          headers: {
+            "Authorization": "Bearer $token",  // Bearer token ile
+          },
+        ),
+      );
+
+      if (response.statusCode == 200) {
+        return response.data;  // Return the list of all resources if success
+      } else {
+        print("Error: ${response.statusMessage}");
+        return [];  // Return empty list if failed
+      }
+    } catch (e) {
+      print("Error: $e");
+      return [];  // Return empty list on error
+    }
+  }  Future<Map<String, dynamic>> getResourceDetails(int resourceId) async {
+    try {
+      var response = await _dio.get('/Resource/GetResourceById/$resourceId');
+      if (response.statusCode == 200) {
+        return response.data;  // Return the resource details
+      } else {
+        throw Exception('Failed to load resource details');
+      }
+    } catch (e) {
+      throw Exception('Error fetching resource: $e');
+    }
+  }
+
+
 
 
   // Çıkış yap
