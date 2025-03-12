@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../Resource/all_resources_screen.dart';
 import '/screens/auth/login_screen.dart';
 import '/screens/profile/profile_screen.dart';  // Profil sayfasını dahil et
 import '/screens/Discussions/discussions_screen.dart';  // Tartışmalar sayfasını dahil et
+ // Kaynaklar sayfasını dahil et
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -41,13 +43,9 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Hoşgeldin, $userName!"),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.logout),
-            onPressed: _logout,
-          ),
-        ],
+        title: Text("Hoşgeldin, $userName!", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.blueAccent,
+        elevation: 5,
       ),
       drawer: Drawer(
         child: ListView(
@@ -76,59 +74,63 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             ListTile(
               leading: Icon(Icons.person, color: Colors.blueAccent),
-              title: Text("Profil"),
+              title: Text("Profil", style: TextStyle(fontSize: 18)),
               onTap: () {
-                // Profil sayfasına yönlendir
                 Navigator.push(context, MaterialPageRoute(builder: (context) => ProfileScreen()));
               },
             ),
             ListTile(
               leading: Icon(Icons.chat, color: Colors.blueAccent),
-              title: Text("Tartışmalar"),  // Tartışmalar menüsünü ekledik
+              title: Text("Tartışmalar", style: TextStyle(fontSize: 18)),
               onTap: () {
-                // Tartışmalar sayfasına yönlendir
                 Navigator.push(context, MaterialPageRoute(builder: (context) => DiscussionsScreen()));
               },
             ),
             ListTile(
+              leading: Icon(Icons.book, color: Colors.blueAccent),
+              title: Text("Kaynaklar", style: TextStyle(fontSize: 18)),
+              onTap: () {
+                // Navigate to the Resources Screen
+                Navigator.push(context, MaterialPageRoute(builder: (context) => AllResourcesScreen()));
+              },
+            ),
+            ListTile(
               leading: Icon(Icons.settings, color: Colors.blueAccent),
-              title: Text("Ayarlar"),
+              title: Text("Ayarlar", style: TextStyle(fontSize: 18)),
               onTap: () {},
             ),
             ListTile(
               leading: Icon(Icons.logout, color: Colors.blueAccent),
-              title: Text("Çıkış Yap"),
+              title: Text("Çıkış Yap", style: TextStyle(fontSize: 18)),
               onTap: _logout,
             ),
           ],
         ),
       ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Ana sayfa içeriği, şimdilik örnek bir yazı
-              Text(
-                "Ana Sayfa İçeriği Buraya Gelecek",
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-              ),
-              SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () {
-                  // Burada bir işlev ekleyebilirsiniz.
-                },
-                child: Text("Bir Şeyler Yapın"),
-                style: ElevatedButton.styleFrom(
-                  minimumSize: Size(double.infinity, 50), backgroundColor: Colors.blueAccent,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+      body: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              "Ana Sayfa İçeriği Buraya Gelecek",
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                // Burada bir işlev ekleyebilirsiniz.
+              },
+              child: Text("Bir Şeyler Yapın"),
+              style: ElevatedButton.styleFrom(
+                minimumSize: Size(double.infinity, 50),
+                backgroundColor: Colors.blueAccent,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
