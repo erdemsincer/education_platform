@@ -11,7 +11,7 @@ class _DiscussionUserScreenState extends State<DiscussionUserScreen> {
   late Future<List<dynamic>> _discussions;
   bool _isLoading = false;
 
-  // ApiService instance
+  // ApiService instanc
   final ApiService _apiService = ApiService();
 
   @override
