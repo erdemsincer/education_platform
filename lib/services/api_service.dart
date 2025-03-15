@@ -312,6 +312,92 @@ class ApiService {
       throw Exception('Error fetching resource: $e');
     }
   }
+  Future<bool> sendMessage(String name, String email, String subject, String content) async {
+    try {
+      var response = await _dio.post(
+        '/Message',  // Mesaj API'sinin endpoint'i
+        data: {
+          "name": name,
+          "email": email,
+          "subject": subject,
+          "content": content,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        return true;  // Mesaj başarıyla gönderildi
+      } else {
+        print("Error: ${response.statusMessage}");
+        return false;  // Hata durumu
+      }
+    } catch (e) {
+      print("Error sending message: $e");
+      return false;  // Hata durumu
+    }
+  }
+  Future<List<dynamic>> getInstructors() async {
+    try {
+      var response = await _dio.get("/Instructor");  // Öğretmenlerin listesi
+      if (response.statusCode == 200) {
+        return response.data;  // Öğretmenlerin listesi döndürülüyor
+      } else {
+        print("Error: ${response.statusMessage}");
+        return [];
+      }
+    } catch (e) {
+      print("API Error: $e");
+      return [];
+    }
+  }
+
+  // Bir öğretmenin detaylarını almak için servis
+  Future<Map<String, dynamic>> getInstructorDetails(int instructorId) async {
+    try {
+      var response = await _dio.get('/Instructor/details/$instructorId');
+      if (response.statusCode == 200) {
+        return response.data;
+      } else {
+        throw Exception('Failed to load instructor details');
+      }
+    } catch (e) {
+      throw Exception('Error fetching instructor details: $e');
+    }
+  }
+  Future<bool> postReview(int instructorId, String comment, int rating) async {
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? token = prefs.getString("authToken");
+
+      if (token == null) {
+        throw Exception('User not logged in');
+      }
+
+      Map<String, dynamic> decodedToken = JwtDecoder.decode(token);
+      String userId = decodedToken["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"] ?? "";
+
+      var response = await _dio.post(
+        '/Review',
+        data: {
+          'instructorId': instructorId,
+          'userId': userId,
+          'rating': rating,
+          'comment': comment,
+        },
+        options: Options(
+          headers: {'Authorization': 'Bearer $token'},
+        ),
+      );
+
+      if (response.statusCode == 200) {
+        return true;
+      } else {
+        throw Exception('Failed to post review');
+      }
+    } catch (e) {
+      print('Error posting review: $e');
+      return false;
+    }
+  }
 
 
 
