@@ -130,7 +130,7 @@ class _CategoriesWidgetState extends State<CategoriesWidget> {
     );
   }
 
-  // Kategoriye tıklandığında kaynakları alacak sayfaya yönlendiren fonksiyon
+  // Kategoriye tıklandığına kaynakları alacak sayfaya yönlendiren fonksiyon
   void _onCategoryTap(int categoryId, String categoryName) {
     // getResourcesByCategory fonksiyonunu çağırarak kaynakları alıyoruz
     ApiService().getResourcesByCategory(categoryId).then((resources) {
