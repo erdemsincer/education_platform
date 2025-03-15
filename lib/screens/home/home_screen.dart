@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:education_platform/screens/Resource/all_resources_screen.dart';
+import 'package:education_platform/screens/auth/login_screen.dart';
+import 'package:education_platform/screens/profile/profile_screen.dart';
+import 'package:education_platform/screens/Discussions/discussions_screen.dart';
+import 'package:education_platform/screens/message/message_screen.dart';
+import '../Category/all_categories_screen.dart';
 import '../Instructors/ınstructors_list_screen.dart';
-import '../Resource/all_resources_screen.dart';
-import '/screens/auth/login_screen.dart';
-import '/screens/profile/profile_screen.dart';
-import '/screens/Discussions/discussions_screen.dart';
-import '/screens/message/message_screen.dart';
+import 'categories_widget.dart';  // Import the CategoriesScreen
+import 'banner_widget.dart';  // Import the banner widget
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -105,8 +108,14 @@ class _HomeScreenState extends State<HomeScreen> {
               leading: Icon(Icons.school, color: Colors.blueAccent),
               title: Text("Eğitimciler", style: TextStyle(fontSize: 18)),
               onTap: () {
-                // Ensure InstructorsListScreen is properly implemented and imported
                 Navigator.push(context, MaterialPageRoute(builder: (context) => InstructorsListScreen()));
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.school, color: Colors.blueAccent),
+              title: Text("Kaynak Kategorileri", style: TextStyle(fontSize: 18)),
+              onTap: () {
+                Navigator.push(context, MaterialPageRoute(builder: (context) => AllCategoriesScreen()));
               },
             ),
             ListTile(
@@ -122,31 +131,14 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              "Ana Sayfa İçeriği Buraya Gelecek",
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                // You can add functionality here
-              },
-              child: Text("Bir Şeyler Yapın"),
-              style: ElevatedButton.styleFrom(
-                minimumSize: Size(double.infinity, 50),
-                backgroundColor: Colors.blueAccent,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            ),
-          ],
-        ),
+      body: ListView(  // ListView kullanıyoruz
+        children: [
+          // Banner widget'ı burada ekliyoruz
+          BannerWidget(),
+
+          // Kategoriler widget'ı burada ekliyoruz
+          CategoriesWidget(),
+        ],
       ),
     );
   }
