@@ -398,6 +398,47 @@ class ApiService {
       return false;
     }
   }
+  Future<Map<String, dynamic>?> getBanner() async {
+    try {
+      var response = await _dio.get("/Banner/1");  // API endpoint, tek bir banner alıyoruz
+      if (response.statusCode == 200) {
+        return response.data;  // Tek bir banner döndürüyoruz
+      } else {
+        throw Exception('Failed to load banner');
+      }
+    } catch (e) {
+      print("Error fetching banner: $e");
+      return null;  // Hata durumunda null döndürüyoruz
+    }
+  }
+  Future<List<Map<String, dynamic>>> getCategories() async {
+    try {
+      var response = await _dio.get("/Category");  // API'den kategori verilerini alıyoruz
+      if (response.statusCode == 200) {
+        return List<Map<String, dynamic>>.from(response.data);
+      } else {
+        throw Exception('Failed to load categories');
+      }
+    } catch (e) {
+      print("Error fetching categories: $e");
+      return [];  // Hata durumunda boş liste döndürüyoruz
+    }
+  }
+  Future<List<Map<String, dynamic>>> getResourcesByCategory(int categoryId) async {
+    try {
+      var response = await _dio.get("/Resource/GetByCategory/$categoryId");  // Kategoriye ait kaynakları al
+      if (response.statusCode == 200) {
+        return List<Map<String, dynamic>>.from(response.data);
+      } else {
+        throw Exception('Failed to load resources');
+      }
+    } catch (e) {
+      print("Error fetching resources: $e");
+      return [];  // Hata durumunda boş liste döndürüyoruz
+    }
+  }
+
+
 
 
 
