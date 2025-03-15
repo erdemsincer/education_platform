@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../Instructors/ınstructors_list_screen.dart';
 import '../Resource/all_resources_screen.dart';
 import '/screens/auth/login_screen.dart';
-import '/screens/profile/profile_screen.dart';  // Profil sayfasını dahil et
-import '/screens/Discussions/discussions_screen.dart';  // Tartışmalar sayfasını dahil et
- // Kaynaklar sayfasını dahil et
+import '/screens/profile/profile_screen.dart';
+import '/screens/Discussions/discussions_screen.dart';
+import '/screens/message/message_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -28,7 +29,7 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       userName = prefs.getString("userName") ?? "Kullanıcı";
       userEmail = prefs.getString("userEmail") ?? "";
-      profileImage = prefs.getString("profileImage") ?? "https://via.placeholder.com/150"; // Varsayılan profil resmi
+      profileImage = prefs.getString("profileImage") ?? "https://via.placeholder.com/150"; // Default profile image
       userRoles = prefs.getStringList("userRoles") ?? [];
     });
   }
@@ -67,7 +68,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   Text(
                     "Roller: ${userRoles.join(", ")}",
                     style: TextStyle(color: Colors.white70, fontSize: 12),
-                    overflow: TextOverflow.ellipsis, // Uzun rollerin taşmasını engelliyoruz
+                    overflow: TextOverflow.ellipsis, // Prevent long roles from overflowing
                   ),
                 ],
               ),
@@ -90,8 +91,22 @@ class _HomeScreenState extends State<HomeScreen> {
               leading: Icon(Icons.book, color: Colors.blueAccent),
               title: Text("Kaynaklar", style: TextStyle(fontSize: 18)),
               onTap: () {
-                // Navigate to the Resources Screen
                 Navigator.push(context, MaterialPageRoute(builder: (context) => AllResourcesScreen()));
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.message, color: Colors.blueAccent),
+              title: Text("Bize Ulaş", style: TextStyle(fontSize: 18)),
+              onTap: () {
+                Navigator.push(context, MaterialPageRoute(builder: (context) => MessageScreen()));
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.school, color: Colors.blueAccent),
+              title: Text("Eğitimciler", style: TextStyle(fontSize: 18)),
+              onTap: () {
+                // Ensure InstructorsListScreen is properly implemented and imported
+                Navigator.push(context, MaterialPageRoute(builder: (context) => InstructorsListScreen()));
               },
             ),
             ListTile(
@@ -119,7 +134,7 @@ class _HomeScreenState extends State<HomeScreen> {
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-                // Burada bir işlev ekleyebilirsiniz.
+                // You can add functionality here
               },
               child: Text("Bir Şeyler Yapın"),
               style: ElevatedButton.styleFrom(
