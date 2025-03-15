@@ -16,42 +16,50 @@ class MyApp extends StatelessWidget {
       title: 'Education Platform',
       theme: ThemeData(
         primarySwatch: Colors.blue,
-        fontFamily: 'Poppins', // Genel yazı tipi
+        fontFamily: 'Poppins', // General font
       ),
       home: FutureBuilder<String>(
-        future: _getInitialRoute(), // Get initial route asynchronously
+        future: _getInitialRoute(),
         builder: (context, snapshot) {
+          // While waiting for data, show a loading indicator
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Scaffold(body: Center(child: CircularProgressIndicator()));
-          } else if (snapshot.hasError) {
+          }
+
+          // If there's an error, show a message
+          if (snapshot.hasError) {
             return Scaffold(body: Center(child: Text('Error: ${snapshot.error}')));
-          } else if (snapshot.hasData) {
+          }
+
+          // If the data exists, route based on the data
+          if (snapshot.hasData) {
             return MaterialApp(
               initialRoute: snapshot.data,
               routes: {
                 "/login": (context) => LoginScreen(),
                 "/register": (context) => RegisterScreen(),
-                "/home": (context) => HomeScreen(), // Ana ekran eklendi
+                "/home": (context) => HomeScreen(), // Main screen added
               },
             );
-          } else {
-            return Scaffold(body: Center(child: Text('No route available')));
           }
+
+          // Default case if no route is available
+          return Scaffold(body: Center(child: Text('No route available')));
         },
       ),
     );
   }
 
-  // Uygulama başlarken giriş yapmış kullanıcıyı kontrol et
+  // Check if the user is logged in or not
   Future<String> _getInitialRoute() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? userId = prefs.getString("userId");
 
-    // Eğer userId varsa, doğrudan HomeScreen'e yönlendir
+    // If userId exists and is not empty, route to home screen
     if (userId != null && userId.isNotEmpty) {
-      return '/home'; // Kullanıcı giriş yapmışsa home ekranına yönlendir
+      return '/home'; // User is logged in
     } else {
-      return '/login'; // Kullanıcı giriş yapmamışsa login ekranına yönlendir
+      return '/login'; // User is not logged in, route to login screen
     }
   }
 }
