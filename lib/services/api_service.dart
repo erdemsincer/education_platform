@@ -436,7 +436,110 @@ class ApiService {
       print("Error fetching resources: $e");
       return [];  // Hata durumunda boş liste döndürüyoruz
     }
+  }Future<List<Map<String, dynamic>>> getLatestResources() async {
+    try {
+      var response = await _dio.get("/Resource/GetLatestResources");  // API endpoint
+      if (response.statusCode == 200) {
+        return List<Map<String, dynamic>>.from(response.data);
+      } else {
+        throw Exception('Failed to load latest resources');
+      }
+    } catch (e) {
+      print("Error fetching latest resources: $e");
+      return [];  // Hata durumunda boş liste döndür
+    }
+    }
+  Future<List<Map<String, dynamic>>> getLastFourInstructors() async {
+    try {
+      var response = await _dio.get("/Instructor/last-four");  // API endpoint
+      if (response.statusCode == 200) {
+        return List<Map<String, dynamic>>.from(response.data);
+      } else {
+        throw Exception('Failed to load last four instructors');
+      }
+    } catch (e) {
+      print("Error fetching last four instructors: $e");
+      return [];
+    }
   }
+  // Hakkımızda bilgisini getir
+  Future<Map<String, dynamic>?> getAbout() async {
+    try {
+      var response = await _dio.get("/About"); // API endpoint
+      if (response.statusCode == 200) {
+        return response.data; // Hakkında bilgilerini döndür
+      } else {
+        throw Exception('Failed to load about data');
+      }
+    } catch (e) {
+      print("Error fetching about data: $e");
+      return null; // Hata durumunda null döndür
+    }
+  }
+  // Tüm referansları (testimonials) getir
+  Future<List<Map<String, dynamic>>> getTestimonials() async {
+    try {
+      var response = await _dio.get("/Testimonial"); // API endpoint
+      if (response.statusCode == 200) {
+        return List<Map<String, dynamic>>.from(response.data); // Liste olarak dön
+      } else {
+        throw Exception('Failed to load testimonials');
+      }
+    } catch (e) {
+      print("Error fetching testimonials: $e");
+      return [];
+    }
+  }
+  Future<String?> getCareerAdvice() async {
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? token = prefs.getString("authToken");
+
+      if (token == null) {
+        print("Token bulunamadı.");
+        return null;
+      }
+
+      // 🧠 userId'yi token içinden alıyoruz
+      Map<String, dynamic> decodedToken = JwtDecoder.decode(token);
+      String userIdStr = decodedToken["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"] ?? "";
+
+      if (userIdStr.isEmpty) {
+        print("Token içinde userId yok.");
+        return null;
+      }
+
+      int userId = int.parse(userIdStr); // 🔥 Hata burda olmayacak çünkü boşluk kontrolü yapıldı
+
+      final response = await _dio.post(
+        "/chatbot/career-advice",
+        data: {
+          "userId": userId,
+        },
+        options: Options(
+          headers: {
+            "Authorization": "Bearer $token",
+            "Content-Type": "application/json",
+          },
+        ),
+      );
+
+      if (response.statusCode == 200) {
+        print("Career response: ${response.data}");
+        return response.data.toString();
+      } else {
+        print("API yanıt durumu: ${response.statusCode}");
+        return null;
+      }
+    } catch (e) {
+      print("Career advice error: $e");
+      return null;
+    }
+  }
+
+
+
+
 
 
 
