@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:education_platform/services/api_service.dart';
-import 'resources_by_category_screen.dart';  // Kaynaklar sayfası için import
+import 'resources_by_category_screen.dart';
 
 class AllCategoriesScreen extends StatefulWidget {
+  const AllCategoriesScreen({super.key});
+
   @override
-  _AllCategoriesScreenState createState() => _AllCategoriesScreenState();
+  State<AllCategoriesScreen> createState() => _AllCategoriesScreenState();
 }
 
 class _AllCategoriesScreenState extends State<AllCategoriesScreen> {
@@ -13,36 +15,52 @@ class _AllCategoriesScreenState extends State<AllCategoriesScreen> {
   @override
   void initState() {
     super.initState();
-    _categories = ApiService().getCategories();  // API'den tüm kategorileri al
+    _categories = ApiService().getCategories();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Tüm Kategoriler', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.blueAccent,
-        elevation: 10,
+        title: const Text(
+          '📚 Tüm Kategoriler',
+          style: TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
+          ),
+        ),
+        backgroundColor: Colors.indigo,
+        elevation: 6,
       ),
       body: Padding(
-        padding: const EdgeInsets.all(20.0),
+        padding: const EdgeInsets.all(16.0),
         child: FutureBuilder<List<Map<String, dynamic>>>(
           future: _categories,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return Center(child: CircularProgressIndicator());  // Yükleniyor göstergesi
+              return const Center(child: CircularProgressIndicator());
             } else if (snapshot.hasError) {
-              return Center(child: Text("Hata: ${snapshot.error}", style: TextStyle(fontSize: 18, color: Colors.red)));  // Hata mesajı
+              return Center(
+                child: Text(
+                  "❌ Hata: ${snapshot.error}",
+                  style: const TextStyle(fontSize: 16, color: Colors.red),
+                  textAlign: TextAlign.center,
+                ),
+              );
             } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-              return Center(child: Text("Hiç kategori bulunamadı.", style: TextStyle(fontSize: 18, color: Colors.black87)));  // Kategoriler yoksa mesaj
+              return const Center(
+                child: Text(
+                  "⚠️ Hiç kategori bulunamadı.",
+                  style: TextStyle(fontSize: 16, color: Colors.black87),
+                ),
+              );
             } else {
-              var categories = snapshot.data;
-
+              var categories = snapshot.data!;
               return ListView.builder(
-                itemCount: categories!.length,
+                itemCount: categories.length,
                 itemBuilder: (context, index) {
-                  var category = categories[index];
-                  return _buildCategoryCard(category);
+                  return _buildCategoryCard(categories[index]);
                 },
               );
             }
@@ -52,56 +70,45 @@ class _AllCategoriesScreenState extends State<AllCategoriesScreen> {
     );
   }
 
-  // Kategorileri şık bir şekilde göstermek için kullanılan fonksiyon
   Widget _buildCategoryCard(Map<String, dynamic> category) {
     return Card(
-      elevation: 8,
+      elevation: 5,
+      margin: const EdgeInsets.symmetric(vertical: 10),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15),  // Yuvarlatılmış köşeler
+        borderRadius: BorderRadius.circular(14),
       ),
-      margin: EdgeInsets.symmetric(vertical: 10),
-      shadowColor: Colors.black.withOpacity(0.2),
       child: InkWell(
-        onTap: () {
-          // Kategoriye tıklandığında kaynakları alacak sayfaya yönlendiriyoruz
-          _onCategoryTap(category['id'], category['name']);
-        },
-        borderRadius: BorderRadius.circular(15),
+        borderRadius: BorderRadius.circular(14),
+        onTap: () => _onCategoryTap(category['id'], category['name']),
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(16),
           child: Row(
             children: [
-              // Kategorinin ikonu
-              Icon(Icons.category, size: 50, color: Colors.blueAccent),
-              SizedBox(width: 16),
-              // Kategorinin başlık kısmı
+              Icon(Icons.category_rounded, size: 40, color: Colors.indigo),
+              const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       category['name'],
-                      style: TextStyle(
-                        fontSize: 20,
+                      style: const TextStyle(
+                        fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: Colors.blueAccent,
+                        color: Colors.indigo,
                       ),
                     ),
-                    SizedBox(height: 8),
-                    Text(
-                      'Kategoriye ait kaynakları görmek için tıklayın.',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.black54,
-                      ),
-                      overflow: TextOverflow.ellipsis,
+                    const SizedBox(height: 6),
+                    const Text(
+                      "Kategoriye ait kaynakları görmek için tıklayın.",
+                      style: TextStyle(fontSize: 14, color: Colors.black54),
                       maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),
               ),
-              // Sağ tarafta ok ikonu
-              Icon(Icons.arrow_forward_ios, size: 20, color: Colors.blueAccent),
+              const Icon(Icons.arrow_forward_ios_rounded, size: 18, color: Colors.indigo),
             ],
           ),
         ),
@@ -109,18 +116,15 @@ class _AllCategoriesScreenState extends State<AllCategoriesScreen> {
     );
   }
 
-  // Kategoriye tıklandığında kaynakları alacak sayfaya yönlendiren fonksiyon
   void _onCategoryTap(int categoryId, String categoryName) {
-    // getResourcesByCategory fonksiyonunu çağırarak kaynakları alıyoruz
     ApiService().getResourcesByCategory(categoryId).then((resources) {
-      // Kaynaklar sayfasına yönlendirme
       Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => ResourcesByCategoryScreen(
             categoryId: categoryId,
             categoryName: categoryName,
-          ),  // Kaynaklar sayfasına yönlendiriyoruz
+          ),
         ),
       );
     });
