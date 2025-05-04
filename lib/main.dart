@@ -9,57 +9,82 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
+  // Giriş kontrolü
+  Future<String> _getInitialRoute() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? userId = prefs.getString("userId");
+    return (userId != null && userId.isNotEmpty) ? '/home' : '/login';
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Education Platform',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
-        fontFamily: 'Poppins', // General font
+        useMaterial3: true, // Yeni nesil Material 3
+        fontFamily: 'Poppins',
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.indigo, // Ana renk
+          brightness: Brightness.light,
+        ),
+        scaffoldBackgroundColor: Colors.grey[50],
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.indigo,
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            textStyle: const TextStyle(fontWeight: FontWeight.w600),
+          ),
+        ),
+        inputDecorationTheme: InputDecorationTheme(
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+          filled: true,
+          fillColor: Colors.white,
+        ),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Colors.indigo,
+          foregroundColor: Colors.white,
+          elevation: 2,
+          centerTitle: true,
+        ),
       ),
       home: FutureBuilder<String>(
         future: _getInitialRoute(),
         builder: (context, snapshot) {
-          // While waiting for data, show a loading indicator
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Scaffold(body: Center(child: CircularProgressIndicator()));
+            return const Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            );
           }
 
-          // If there's an error, show a message
           if (snapshot.hasError) {
-            return Scaffold(body: Center(child: Text('Error: ${snapshot.error}')));
+            return Scaffold(
+              body: Center(child: Text('Error: ${snapshot.error}')),
+            );
           }
 
-          // If the data exists, route based on the data
           if (snapshot.hasData) {
             return MaterialApp(
+              debugShowCheckedModeBanner: false,
               initialRoute: snapshot.data,
               routes: {
                 "/login": (context) => LoginScreen(),
                 "/register": (context) => RegisterScreen(),
-                "/home": (context) => HomeScreen(), // Main screen added
+                "/home": (context) => HomeScreen(),
               },
+              theme: Theme.of(context), // Renk uyumu korunsun
             );
           }
 
-          // Default case if no route is available
-          return Scaffold(body: Center(child: Text('No route available')));
+          return const Scaffold(
+            body: Center(child: Text('No route available')),
+          );
         },
       ),
     );
-  }
-
-  // Check if the user is logged in or not
-  Future<String> _getInitialRoute() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? userId = prefs.getString("userId");
-
-    // If userId exists and is not empty, route to home screen
-    if (userId != null && userId.isNotEmpty) {
-      return '/home'; // User is logged in
-    } else {
-      return '/login'; // User is not logged in, route to login screen
-    }
   }
 }
