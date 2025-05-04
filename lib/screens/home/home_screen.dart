@@ -7,12 +7,18 @@ import 'package:education_platform/screens/Discussions/discussions_screen.dart';
 import 'package:education_platform/screens/message/message_screen.dart';
 import '../Category/all_categories_screen.dart';
 import '../Instructors/ınstructors_list_screen.dart';
-import 'categories_widget.dart';  // Import the CategoriesScreen
-import 'banner_widget.dart';  // Import the banner widget
+import 'about_widget.dart';
+import 'categories_widget.dart';
+import 'banner_widget.dart';
+import 'latest_resources_widget.dart';
+import 'latest_testimonials_widget.dart';
+import 'latest_ınstructors_widget.dart';
 
 class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
+
   @override
-  _HomeScreenState createState() => _HomeScreenState();
+  State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
@@ -28,118 +34,103 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _loadUserData() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
+    final prefs = await SharedPreferences.getInstance();
     setState(() {
       userName = prefs.getString("userName") ?? "Kullanıcı";
       userEmail = prefs.getString("userEmail") ?? "";
-      profileImage = prefs.getString("profileImage") ?? "https://via.placeholder.com/150"; // Default profile image
+      profileImage = prefs.getString("profileImage") ?? "https://via.placeholder.com/150";
       userRoles = prefs.getStringList("userRoles") ?? [];
     });
   }
 
   Future<void> _logout() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
+    final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
-    Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => LoginScreen()));
+    if (!mounted) return;
+    Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const LoginScreen()));
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Hoşgeldin, $userName!", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.blueAccent,
-        elevation: 5,
-      ),
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            DrawerHeader(
-              decoration: BoxDecoration(color: Colors.blueAccent),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CircleAvatar(
-                    radius: 40,
-                    backgroundImage: NetworkImage(profileImage),
-                  ),
-                  SizedBox(height: 10),
-                  Text(userName, style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
-                  Text(userEmail, style: TextStyle(color: Colors.white70, fontSize: 14)),
-                  SizedBox(height: 5),
-                  Text(
-                    "Roller: ${userRoles.join(", ")}",
-                    style: TextStyle(color: Colors.white70, fontSize: 12),
-                    overflow: TextOverflow.ellipsis, // Prevent long roles from overflowing
-                  ),
-                ],
-              ),
-            ),
-            ListTile(
-              leading: Icon(Icons.person, color: Colors.blueAccent),
-              title: Text("Profil", style: TextStyle(fontSize: 18)),
-              onTap: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => ProfileScreen()));
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.chat, color: Colors.blueAccent),
-              title: Text("Tartışmalar", style: TextStyle(fontSize: 18)),
-              onTap: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => DiscussionsScreen()));
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.book, color: Colors.blueAccent),
-              title: Text("Kaynaklar", style: TextStyle(fontSize: 18)),
-              onTap: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => AllResourcesScreen()));
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.message, color: Colors.blueAccent),
-              title: Text("Bize Ulaş", style: TextStyle(fontSize: 18)),
-              onTap: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => MessageScreen()));
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.school, color: Colors.blueAccent),
-              title: Text("Eğitimciler", style: TextStyle(fontSize: 18)),
-              onTap: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => InstructorsListScreen()));
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.school, color: Colors.blueAccent),
-              title: Text("Kaynak Kategorileri", style: TextStyle(fontSize: 18)),
-              onTap: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => AllCategoriesScreen()));
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.settings, color: Colors.blueAccent),
-              title: Text("Ayarlar", style: TextStyle(fontSize: 18)),
-              onTap: () {},
-            ),
-            ListTile(
-              leading: Icon(Icons.logout, color: Colors.blueAccent),
-              title: Text("Çıkış Yap", style: TextStyle(fontSize: 18)),
-              onTap: _logout,
-            ),
-          ],
+        title: Text(
+          "Hoşgeldin, $userName!",
+          style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
         ),
+        backgroundColor: Colors.indigo,
+        elevation: 4,
       ),
-      body: ListView(  // ListView kullanıyoruz
+      drawer: _buildDrawer(),
+      body: ListView(
+        padding: const EdgeInsets.symmetric(vertical: 8),
         children: [
-          // Banner widget'ı burada ekliyoruz
-          BannerWidget(),
-
-          // Kategoriler widget'ı burada ekliyoruz
-          CategoriesWidget(),
+          const BannerWidget(),
+          const CategoriesWidget(),
+          LatestResourcesWidget(),
+          LatestInstructorsWidget(),
+          LatestTestimonialsWidget(),
         ],
       ),
+    );
+  }
+
+  Drawer _buildDrawer() {
+    return Drawer(
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: [
+          DrawerHeader(
+            decoration: const BoxDecoration(color: Colors.indigo),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                CircleAvatar(radius: 35, backgroundImage: NetworkImage(profileImage)),
+                const SizedBox(height: 8),
+                Text(
+                  userName,
+                  style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                Text(
+                  userEmail,
+                  style: const TextStyle(color: Colors.white70, fontSize: 13),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+          _buildDrawerItem(Icons.person, "Profil", () {
+            Navigator.push(context, MaterialPageRoute(builder: (_) =>  ProfileScreen()));
+          }),
+          _buildDrawerItem(Icons.chat, "Tartışmalar", () {
+            Navigator.push(context, MaterialPageRoute(builder: (_) =>  DiscussionsScreen()));
+          }),
+          _buildDrawerItem(Icons.book, "Kaynaklar", () {
+            Navigator.push(context, MaterialPageRoute(builder: (_) =>  AllResourcesScreen()));
+          }),
+          _buildDrawerItem(Icons.message, "Bize Ulaş", () {
+            Navigator.push(context, MaterialPageRoute(builder: (_) =>  MessageScreen()));
+          }),
+          _buildDrawerItem(Icons.school, "Eğitimciler", () {
+            Navigator.push(context, MaterialPageRoute(builder: (_) =>  InstructorsListScreen()));
+          }),
+          _buildDrawerItem(Icons.category, "Kaynak Kategorileri", () {
+            Navigator.push(context, MaterialPageRoute(builder: (_) =>  AllCategoriesScreen()));
+          }),
+          _buildDrawerItem(Icons.logout, "Çıkış Yap", _logout),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDrawerItem(IconData icon, String title, VoidCallback onTap) {
+    return ListTile(
+      leading: Icon(icon, color: Colors.indigo),
+      title: Text(title, style: const TextStyle(fontSize: 16)),
+      onTap: onTap,
     );
   }
 }
