@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:education_platform/services/api_service.dart';
-import '../Category/resources_by_category_screen.dart';  // Kaynaklar sayfası için import
-import '../Category/all_categories_screen.dart';  // Tüm Kategoriler sayfası için import
+import '../Category/resources_by_category_screen.dart';
+import '../Category/all_categories_screen.dart';
 
 class CategoriesWidget extends StatefulWidget {
+  const CategoriesWidget({super.key});
+
   @override
-  _CategoriesWidgetState createState() => _CategoriesWidgetState();
+  State<CategoriesWidget> createState() => _CategoriesWidgetState();
 }
 
 class _CategoriesWidgetState extends State<CategoriesWidget> {
@@ -14,114 +16,73 @@ class _CategoriesWidgetState extends State<CategoriesWidget> {
   @override
   void initState() {
     super.initState();
-    _categories = ApiService().getCategories();  // API'den kategorileri al
+    _categories = ApiService().getCategories();
   }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.blueGrey[50], // Arka plan rengini ekliyoruz
-      padding: EdgeInsets.all(16), // İçeriği biraz yukarıdan başlatıyoruz
+      color: Colors.blueGrey[50],
+      padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Başlık kısmı
-          Text(
-            "Kaynak Kategorileri",
+          const Text(
+            "📚 Kaynak Kategorileri",
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
-              color: Colors.blueAccent,
+              color: Colors.indigo,
             ),
           ),
-          SizedBox(height: 16),  // Başlık ile içerik arasında boşluk
-
-          // FutureBuilder ile kategorileri çekiyoruz
+          const SizedBox(height: 16),
           FutureBuilder<List<Map<String, dynamic>>>(
             future: _categories,
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return Center(child: CircularProgressIndicator());  // Yükleniyor göstergesi
+                return const Center(child: CircularProgressIndicator());
               } else if (snapshot.hasError) {
-                return Center(child: Text("Hata: ${snapshot.error}"));  // Hata mesajı
+                return Center(child: Text("❌ Hata: ${snapshot.error}"));
               } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                return Center(child: Text("Kategoriler bulunamadı"));  // Kategoriler yoksa mesaj
+                return const Center(child: Text("Kategori bulunamadı"));
               } else {
-                var categories = snapshot.data;
-
-                // Sadece 4 kategori gösterecek şekilde sınırlıyoruz
-                var limitedCategories = categories!.take(4).toList();
+                final limitedCategories = snapshot.data!.take(4).toList();
 
                 return GridView.builder(
-                  shrinkWrap: true,  // GridView'i sınırlı boyutta gösteriyoruz
-                  physics: NeverScrollableScrollPhysics(),  // Scroll yapmayı engelliyoruz
-                  padding: EdgeInsets.all(8),
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,  // Her satırda 2 öğe gösterilecektir
-                    crossAxisSpacing: 10,  // Satırlar arasındaki boşluk
-                    mainAxisSpacing: 10,   // Sütunlar arasındaki boşluk
-                    childAspectRatio: 1,   // Kategori kartlarının boyut oranı
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  padding: const EdgeInsets.all(8),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 14,
+                    mainAxisSpacing: 14,
+                    childAspectRatio: 1,
                   ),
                   itemCount: limitedCategories.length,
                   itemBuilder: (context, index) {
-                    var category = limitedCategories[index];
-                    return Card(
-                      elevation: 5,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: InkWell(
-                        onTap: () {
-                          // Kategoriye tıklandığında kaynakları alacak sayfaya yönlendiriyoruz
-                          _onCategoryTap(category['id'], category['name']);
-                        },
-                        borderRadius: BorderRadius.circular(10),
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Icon(Icons.category, size: 40, color: Colors.blueAccent),
-                              SizedBox(height: 10),
-                              Text(
-                                category['name'],
-                                textAlign: TextAlign.center,
-                                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                              ),
-                              SizedBox(height: 5),
-                              category['resources'] == null
-                                  ? Text('No resources available')
-                                  : Text('Resources: ${category['resources']}'),
-                            ],
-                          ),
-                        ),
-                      ),
-                    );
+                    final category = limitedCategories[index];
+                    return _buildCategoryCard(category);
                   },
                 );
               }
             },
           ),
-
-          // Tüm kategoriler butonu
-          SizedBox(height: 20),
+          const SizedBox(height: 20),
           Center(
-            child: ElevatedButton(
+            child: ElevatedButton.icon(
               onPressed: () {
-                // Tüm kategoriler sayfasına gitmek için burada yönlendirme ekliyoruz
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder: (context) => AllCategoriesScreen(),  // Tüm kategoriler sayfasına yönlendiriyoruz
-                  ),
+                  MaterialPageRoute(builder: (_) => const AllCategoriesScreen()),
                 );
               },
-              child: Text("Tüm Kategoriler"),
+              icon: const Icon(Icons.arrow_forward_rounded),
+              label: const Text("Tüm Kategoriler"),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blueAccent,  // Buton rengi
-                padding: EdgeInsets.symmetric(vertical: 12, horizontal: 30),
-                textStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                backgroundColor: Colors.indigo,
+                padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 28),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
               ),
             ),
           ),
@@ -130,18 +91,47 @@ class _CategoriesWidgetState extends State<CategoriesWidget> {
     );
   }
 
-  // Kategoriye tıklandığına kaynakları alacak sayfaya yönlendiren fonksiyon
+  Widget _buildCategoryCard(Map<String, dynamic> category) {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(14),
+        onTap: () => _onCategoryTap(category['id'], category['name']),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.category_rounded, size: 40, color: Colors.indigo),
+              const SizedBox(height: 12),
+              Text(
+                category['name'],
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'Kaynak: ${category['resources'] ?? 0}',
+                style: const TextStyle(fontSize: 13, color: Colors.black54),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   void _onCategoryTap(int categoryId, String categoryName) {
-    // getResourcesByCategory fonksiyonunu çağırarak kaynakları alıyoruz
-    ApiService().getResourcesByCategory(categoryId).then((resources) {
-      // Kaynaklar sayfasına yönlendirme
+    ApiService().getResourcesByCategory(categoryId).then((_) {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => ResourcesByCategoryScreen(
+          builder: (_) => ResourcesByCategoryScreen(
             categoryId: categoryId,
             categoryName: categoryName,
-          ),  // Kaynaklar sayfasına yönlendiriyoruz
+          ),
         ),
       );
     });
