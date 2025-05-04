@@ -13,7 +13,7 @@ class _AllResourcesScreenState extends State<AllResourcesScreen> {
   @override
   void initState() {
     super.initState();
-    _loadResources();  // Load all resources initially
+    _loadResources();  // Load all resources initial
   }
 
   // Method to load all resources
