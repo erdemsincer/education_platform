@@ -2,75 +2,90 @@ import 'package:flutter/material.dart';
 import 'package:education_platform/services/api_service.dart';
 
 class BannerWidget extends StatefulWidget {
+  const BannerWidget({super.key});
+
   @override
-  _BannerWidgetState createState() => _BannerWidgetState();
+  State<BannerWidget> createState() => _BannerWidgetState();
 }
 
-class _BannerWidgetState extends State<BannerWidget> {
+class _BannerWidgetState extends State<BannerWidget> with SingleTickerProviderStateMixin {
   late Future<Map<String, dynamic>?> _banner;
+  late AnimationController _fadeController;
+  late Animation<double> _fadeAnimation;
 
   @override
   void initState() {
     super.initState();
-    _banner = ApiService().getBanner();  // API'den tek bannerı al
+    _banner = ApiService().getBanner();
+
+    _fadeController = AnimationController(vsync: this, duration: const Duration(milliseconds: 800));
+    _fadeAnimation = CurvedAnimation(parent: _fadeController, curve: Curves.easeIn);
+    _fadeController.forward();
+  }
+
+  @override
+  void dispose() {
+    _fadeController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<Map<String, dynamic>?>(  // API verisi çekiliyor
+    return FutureBuilder<Map<String, dynamic>?>(
       future: _banner,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator());  // Yükleniyor göstergesi
+          return const Center(child: CircularProgressIndicator());
         } else if (snapshot.hasError) {
-          return Center(child: Text("Hata: ${snapshot.error}"));  // Hata mesajı
+          return Center(child: Text("Hata: ${snapshot.error}"));
         } else if (!snapshot.hasData) {
-          return Center(child: Text("Banner bulunamadı"));  // Banner yoksa mesaj
+          return const Center(child: Text("🎈 Banner bulunamadı"));
         } else {
-          var banner = snapshot.data;
+          final banner = snapshot.data!;
 
-          // Tek bir banner gösteriyoruz
-          return Container(
-            width: double.infinity,  // Genişlik tam ekran olacak
-            margin: EdgeInsets.symmetric(vertical: 20, horizontal: 10),  // Margin ekledik
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),  // Kutunun köşe yuvarlaklıkları
-              color: Colors.white,  // Arka plan rengi beyaz
-              boxShadow: [
-                BoxShadow(  // Kutunun etrafına gölge ekledik
-                  color: Colors.black12,
-                  spreadRadius: 5,
-                  blurRadius: 10,
-                  offset: Offset(0, 4), // Gölgenin konumu
-                ),
-              ],
-            ),
-            child: Column(
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(20),  // Resmin köşe yuvarlaklıkları
-                  child: Image.asset(
-                    "assets/img/hero/heroman.png",  // Burada asset yolu kullanıyoruz
-                    fit: BoxFit.cover,  // Resmi kutuya tam oturtuyoruz
-                    width: double.infinity,  // Genişlik tam ekran
-                    height: 300,  // Yüksekliği artırdık
+          return FadeTransition(
+            opacity: _fadeAnimation,
+            child: Container(
+              margin: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black12,
+                    spreadRadius: 3,
+                    blurRadius: 10,
+                    offset: const Offset(0, 6),
                   ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(15.0),
-                  child: Text(
-                    banner!['title'],  // Banner başlığını ekliyoruz
-                    style: TextStyle(
-                      fontSize: 24,  // Font boyutunu artırdık
-                      fontWeight: FontWeight.w600,  // Font ağırlığını değiştirdik
-                      color: Colors.blueAccent,  // Başlık rengi mavi
-                      fontFamily: 'Roboto',  // Font ailesini değiştirdik
-                      letterSpacing: 2,  // Harfler arası mesafeyi artırdık
+                ],
+              ),
+              child: Column(
+                children: [
+                  ClipRRect(
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                    child: Image.asset(
+                      "assets/img/hero/heroman.png",
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                      height: 220,
                     ),
-                    textAlign: TextAlign.center,  // Başlığı ortaladık
                   ),
-                ),
-              ],
+                  Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Text(
+                      banner['title'],
+                      style: const TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.indigo,
+                        fontFamily: 'Roboto',
+                        letterSpacing: 1.2,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ],
+              ),
             ),
           );
         }
