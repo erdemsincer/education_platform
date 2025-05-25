@@ -13,13 +13,12 @@ class _AllResourcesScreenState extends State<AllResourcesScreen> {
   @override
   void initState() {
     super.initState();
-    _loadResources();  // Load all resources initial
+    _loadResources(); // İlk kaynakları getir
   }
 
-  // Method to load all resources
   Future<void> _loadResources() async {
     setState(() {
-      _resources = ApiService().getAllResources();  // Fetch all resources from the API
+      _resources = ApiService().getAllResources();
     });
   }
 
@@ -27,78 +26,123 @@ class _AllResourcesScreenState extends State<AllResourcesScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Tüm Kaynaklar', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.blueAccent,
-        elevation: 10,
+        title: const Text(
+          'Tüm Kaynaklar',
+          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: Colors.deepPurple,
+        elevation: 8,
         actions: [
           IconButton(
-            icon: Icon(Icons.refresh, size: 28),
-            onPressed: _loadResources,  // Refresh resources
+            icon: const Icon(Icons.refresh, size: 26),
+            onPressed: _loadResources,
           ),
         ],
       ),
-      body: FutureBuilder<List<dynamic>>(
-        future: _resources,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Hata: ${snapshot.error}', style: TextStyle(fontSize: 18, color: Colors.red)));
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return Center(child: Text('Hiç kaynak bulunamadı.', style: TextStyle(fontSize: 18, color: Colors.black87)));
-          } else {
-            List<dynamic> resources = snapshot.data!;
-            return ListView.builder(
-              itemCount: resources.length,
-              itemBuilder: (context, index) {
-                var resource = resources[index];
-                return Card(
-                  margin: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(18),
-                  ),
-                  elevation: 8,
-                  shadowColor: Colors.black.withOpacity(0.3),
-                  child: ListTile(
-                    contentPadding: EdgeInsets.all(20),
-                    title: Text(
-                      resource['title'],
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.blueAccent,
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFFF3E5F5), Color(0xFFEDE7F6)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: FutureBuilder<List<dynamic>>(
+          future: _resources,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator(color: Colors.deepPurple));
+            } else if (snapshot.hasError) {
+              return Center(
+                child: Text(
+                  '❌ Hata: ${snapshot.error}',
+                  style: const TextStyle(fontSize: 16, color: Colors.red),
+                ),
+              );
+            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              return const Center(
+                child: Text(
+                  '🫥 Hiç kaynak bulunamadı.',
+                  style: TextStyle(fontSize: 16, color: Colors.black87),
+                ),
+              );
+            } else {
+              List<dynamic> resources = snapshot.data!;
+              return ListView.builder(
+                padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+                itemCount: resources.length,
+                itemBuilder: (context, index) {
+                  var resource = resources[index];
+                  return Card(
+                    margin: const EdgeInsets.only(bottom: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    elevation: 6,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(16),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ResourceDetailScreen(resourceId: resource['id']),
+                          ),
+                        );
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Row(
+                          children: [
+                            if (resource['imageUrl'] != null && resource['imageUrl'].toString().isNotEmpty)
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(12),
+                                child: Image.network(
+                                  resource['imageUrl'],
+                                  width: 70,
+                                  height: 70,
+                                  fit: BoxFit.cover,
+                                ),
+                              )
+                            else
+                              Container(
+                                width: 70,
+                                height: 70,
+                                decoration: BoxDecoration(
+                                  color: Colors.deepPurple[100],
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: const Icon(Icons.insert_drive_file, color: Colors.deepPurple, size: 36),
+                              ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    resource['title'],
+                                    style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.deepPurple),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    '👤 ${resource['userName']}',
+                                    style: const TextStyle(fontSize: 14, color: Colors.black87),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    '📂 Kategori: ${resource['categoryName']}',
+                                    style: const TextStyle(fontSize: 13, color: Colors.black54),
+                                  ),
+                                ],
+                              ),
+                            )
+                          ],
+                        ),
                       ),
                     ),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        SizedBox(height: 4),
-                        Text(
-                          'Yazan: ${resource['userName']}',
-                          style: TextStyle(fontSize: 15, color: Colors.black87),
-                        ),
-                        SizedBox(height: 8),
-                        Text(
-                          'Kategori: ${resource['categoryName']}',
-                          style: TextStyle(fontSize: 13, color: Colors.black54),
-                        ),
-                      ],
-                    ),
-                    onTap: () {
-                      // Navigate to ResourceDetailScreen and pass the resource ID
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => ResourceDetailScreen(resourceId: resource['id']),
-                        ),
-                      );
-                    },
-                  ),
-                );
-              },
-            );
-          }
-        },
+                  );
+                },
+              );
+            }
+          },
+        ),
       ),
     );
   }
