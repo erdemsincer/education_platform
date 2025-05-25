@@ -22,8 +22,8 @@ class _CategoriesWidgetState extends State<CategoriesWidget> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.blueGrey[50],
-      padding: const EdgeInsets.all(16),
+      color: Colors.grey.shade50,
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 28),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -35,39 +35,37 @@ class _CategoriesWidgetState extends State<CategoriesWidget> {
               color: Colors.indigo,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
           FutureBuilder<List<Map<String, dynamic>>>(
             future: _categories,
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
+                return const Center(child: CircularProgressIndicator(color: Colors.indigo));
               } else if (snapshot.hasError) {
                 return Center(child: Text("❌ Hata: ${snapshot.error}"));
               } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                return const Center(child: Text("Kategori bulunamadı"));
+                return const Center(child: Text("🫥 Kategori bulunamadı."));
               } else {
                 final limitedCategories = snapshot.data!.take(4).toList();
-
                 return GridView.builder(
+                  itemCount: limitedCategories.length,
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
-                  padding: const EdgeInsets.all(8),
+                  padding: const EdgeInsets.only(top: 4),
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
-                    crossAxisSpacing: 14,
-                    mainAxisSpacing: 14,
+                    crossAxisSpacing: 16,
+                    mainAxisSpacing: 16,
                     childAspectRatio: 1,
                   ),
-                  itemCount: limitedCategories.length,
                   itemBuilder: (context, index) {
-                    final category = limitedCategories[index];
-                    return _buildCategoryCard(category);
+                    return _buildCategoryCard(limitedCategories[index]);
                   },
                 );
               }
             },
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 30),
           Center(
             child: ElevatedButton.icon(
               onPressed: () {
@@ -76,13 +74,15 @@ class _CategoriesWidgetState extends State<CategoriesWidget> {
                   MaterialPageRoute(builder: (_) => const AllCategoriesScreen()),
                 );
               },
-              icon: const Icon(Icons.arrow_forward_rounded),
+              icon: const Icon(Icons.grid_view_rounded),
               label: const Text("Tüm Kategoriler"),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.indigo,
-                padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 28),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 14),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                 textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                elevation: 4,
               ),
             ),
           ),
@@ -92,28 +92,39 @@ class _CategoriesWidgetState extends State<CategoriesWidget> {
   }
 
   Widget _buildCategoryCard(Map<String, dynamic> category) {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(16),
+      elevation: 6,
+      shadowColor: Colors.black12,
       child: InkWell(
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(16),
         onTap: () => _onCategoryTap(category['id'], category['name']),
-        child: Padding(
-          padding: const EdgeInsets.all(12),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            gradient: LinearGradient(
+              colors: [Colors.indigo.shade100, Colors.indigo.shade50],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.category_rounded, size: 40, color: Colors.indigo),
+              const Icon(Icons.category_rounded, size: 42, color: Colors.indigo),
               const SizedBox(height: 12),
               Text(
                 category['name'],
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87),
                 textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: 6),
               Text(
-                'Kaynak: ${category['resources'] ?? 0}',
+                '📌 ${category['resources'] ?? 0} kaynak',
                 style: const TextStyle(fontSize: 13, color: Colors.black54),
               ),
             ],
@@ -124,16 +135,14 @@ class _CategoriesWidgetState extends State<CategoriesWidget> {
   }
 
   void _onCategoryTap(int categoryId, String categoryName) {
-    ApiService().getResourcesByCategory(categoryId).then((_) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => ResourcesByCategoryScreen(
-            categoryId: categoryId,
-            categoryName: categoryName,
-          ),
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ResourcesByCategoryScreen(
+          categoryId: categoryId,
+          categoryName: categoryName,
         ),
-      );
-    });
+      ),
+    );
   }
 }
