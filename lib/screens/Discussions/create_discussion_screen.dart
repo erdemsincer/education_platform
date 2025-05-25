@@ -7,38 +7,34 @@ class CreateDiscussionScreen extends StatefulWidget {
 }
 
 class _CreateDiscussionScreenState extends State<CreateDiscussionScreen> {
+  final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _contentController = TextEditingController();
   bool _isSubmitting = false;
 
-  // Instance of ApiService
   final ApiService _apiService = ApiService();
 
-  // Handle form submission
   Future<void> _createDiscussion() async {
-    setState(() {
-      _isSubmitting = true;
-    });
+    if (!_formKey.currentState!.validate()) return;
 
-    bool success = await _apiService.createDiscussion(
-      _titleController.text,
-      _contentController.text,
+    setState(() => _isSubmitting = true);
+
+    final success = await _apiService.createDiscussion(
+      _titleController.text.trim(),
+      _contentController.text.trim(),
     );
 
-    setState(() {
-      _isSubmitting = false;
-    });
+    setState(() => _isSubmitting = false);
 
+    if (!mounted) return;
     if (success) {
-      // Discussion created successfully, navigate back or show a success message
-      Navigator.pop(context);  // Go back to the previous screen
+      Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Tartışma başarıyla oluşturuldu!")),
+        const SnackBar(content: Text("✅ Tartışma başarıyla oluşturuldu!")),
       );
     } else {
-      // Error in creating discussion, show an error message
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Tartışma oluşturulurken bir hata oluştu.")),
+        const SnackBar(content: Text("❌ Tartışma oluşturulamadı. Lütfen tekrar deneyin.")),
       );
     }
   }
@@ -47,64 +43,79 @@ class _CreateDiscussionScreenState extends State<CreateDiscussionScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Yeni Tartışma Oluştur"),
-        backgroundColor: Colors.blueAccent,
-        elevation: 5,
+        title: const Text("🗨️ Yeni Tartışma Oluştur"),
+        backgroundColor: Colors.indigo,
+        elevation: 4,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Title input
-            TextField(
-              controller: _titleController,
-              decoration: InputDecoration(
-                labelText: "Başlık",
-                hintText: "Tartışma başlığını girin...",
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.blueAccent),
-                ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              // Title field
+              TextFormField(
+                controller: _titleController,
+                validator: (value) =>
+                value == null || value.isEmpty ? "Lütfen bir başlık girin" : null,
+                decoration: _inputDecoration("Tartışma Başlığı"),
               ),
-              style: TextStyle(fontSize: 16, color: Colors.black87),
-            ),
-            SizedBox(height: 20),
+              const SizedBox(height: 20),
 
-            // Content input
-            TextField(
-              controller: _contentController,
-              decoration: InputDecoration(
-                labelText: "İçerik",
-                hintText: "Tartışma içeriğini girin...",
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.blueAccent),
-                ),
+              // Content field
+              TextFormField(
+                controller: _contentController,
+                validator: (value) =>
+                value == null || value.isEmpty ? "Lütfen içerik girin" : null,
+                maxLines: 6,
+                decoration: _inputDecoration("Tartışma İçeriği"),
               ),
-              maxLines: 5,
-              style: TextStyle(fontSize: 16, color: Colors.black87),
-            ),
-            SizedBox(height: 30),
+              const SizedBox(height: 30),
 
-            // Submit Button
-            _isSubmitting
-                ? Center(child: CircularProgressIndicator())
-                : ElevatedButton(
-              onPressed: _createDiscussion,
-              child: Text("Tartışma Oluştur", style: TextStyle(fontSize: 16)),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blueAccent,
-                padding: EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton.icon(
+                  icon: const Icon(Icons.send),
+                  label: _isSubmitting
+                      ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                      strokeWidth: 2,
+                    ),
+                  )
+                      : const Text("Tartışmayı Oluştur"),
+                  onPressed: _isSubmitting ? null : _createDiscussion,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.indigo,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    textStyle: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
-                textStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
+    );
+  }
+
+  InputDecoration _inputDecoration(String label) {
+    return InputDecoration(
+      labelText: label,
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+      focusedBorder: OutlineInputBorder(
+        borderSide: const BorderSide(color: Colors.indigo),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
     );
   }
 }
