@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';  // JWT Decode için
@@ -536,6 +538,88 @@ class ApiService {
       return null;
     }
   }
+  Future<List<Map<String, dynamic>>> getCareerTestQuestions() async {
+    try {
+      final response = await _dio.get("/career-test/questions");
+      if (response.statusCode == 200) {
+        return List<Map<String, dynamic>>.from(response.data);
+      } else {
+        throw Exception("Failed to fetch career test questions");
+      }
+    } catch (e) {
+      print("Career Test Error: $e");
+      return [];
+    }
+  }
+  Future<String?> submitCareerTestAnswers(Map<int, String> answers) async {
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? token = prefs.getString("authToken");
+
+      if (token == null) return null;
+
+      Map<String, dynamic> decodedToken = JwtDecoder.decode(token);
+      String userIdStr = decodedToken["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"] ?? "";
+
+      int userId = int.parse(userIdStr);
+
+      // 🔧 int key'li map json'a çevrilemeyeceği için string key'e dönüştürüyoruz:
+      final stringKeyedAnswers = answers.map((key, value) => MapEntry(key.toString(), value));
+
+      final jsonBody = jsonEncode({
+        "userId": userId,
+        "answers": stringKeyedAnswers
+      });
+
+      final response = await Dio().post(
+        "http://10.0.2.2:7028/api/career-test/submit-answers",
+        data: jsonBody,
+        options: Options(
+          headers: {
+            "Authorization": "Bearer $token",
+            "Content-Type": "application/json"
+          },
+        ),
+      );
+
+      if (response.statusCode == 200) {
+        return json.encode(response.data); // AI cevabı dönüyor
+      } else {
+        print("Cevap gönderilemedi: ${response.statusMessage}");
+        return null;
+      }
+    } catch (e) {
+      print("Submit career test error: $e");
+      return null;
+    }
+  }
+  Future<List<Map<String, dynamic>>> getContactInfo() async {
+    try {
+      final response = await _dio.get("/Contact");
+      if (response.statusCode == 200 && response.data != null) {
+        print("Contact response: ${response.data}"); // DEBUG
+        return List<Map<String, dynamic>>.from(response.data);
+      } else {
+        print("Contact API başarısız: ${response.statusCode}");
+        return [];
+      }
+    } catch (e) {
+      print("Contact API hatası: $e");
+      return [];
+    }
+  }
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
