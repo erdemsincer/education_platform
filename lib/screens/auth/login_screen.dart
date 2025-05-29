@@ -6,15 +6,17 @@ import '/screens/home/home_screen.dart';
 import '/services/api_service.dart';
 
 class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
+
   @override
-  _LoginScreenState createState() => _LoginScreenState();
+  State<LoginScreen> createState() => _LoginScreenState();
 }
 
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  TextEditingController emailController = TextEditingController();
-  TextEditingController passwordController = TextEditingController();
-  ApiService apiService = ApiService();
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
+  final apiService = ApiService();
   bool _loading = false;
   String? _errorMessage;
 
@@ -26,29 +28,25 @@ class _LoginScreenState extends State<LoginScreen> {
       _errorMessage = null;
     });
 
-    // API'den token al
     String? token = await apiService.login(emailController.text, passwordController.text);
 
     if (token != null) {
-      // Token'ı decode et
       Map<String, dynamic> decodedToken = JwtDecoder.decode(token);
+
       String fullName = decodedToken["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"] ?? "Kullanıcı";
       String email = decodedToken["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"] ?? "";
-      String profileImage = decodedToken["ProfileImage"] ?? "https://via.placeholder.com/150"; // Varsayılan profil resmi
-      String userId = decodedToken["userId"]?.toString() ?? ""; // Kullanıcı ID'sini alıyoruz (null olursa boş string)
+      String profileImage = decodedToken["ProfileImage"] ?? "https://via.placeholder.com/150";
+      String userId = decodedToken["userId"]?.toString() ?? "";
 
-      // SharedPreferences'te verileri kaydediyoruz
       SharedPreferences prefs = await SharedPreferences.getInstance();
-      await prefs.setString("token", token); // Token'ı kaydet
-      await prefs.setString("userName", fullName); // Kullanıcı adını kaydet
+      await prefs.setString("token", token);
+      await prefs.setString("userName", fullName);
       await prefs.setString("userEmail", email);
       await prefs.setString("profileImage", profileImage);
-      await prefs.setString("userId", userId); // Kullanıcı ID'sini kaydediyoruz
+      await prefs.setString("userId", userId);
 
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => HomeScreen()),
-      );
+      if (!mounted) return;
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => HomeScreen()));
     } else {
       setState(() {
         _errorMessage = "❌ Giriş başarısız! E-posta veya şifre yanlış.";
@@ -60,71 +58,118 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: Center(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: EdgeInsets.all(20),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    "🚀 Giriş Yap",
-                    style: GoogleFonts.poppins(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.blueAccent,
-                    ),
-                  ),
-                  if (_errorMessage != null)
-                    Padding(
-                      padding: EdgeInsets.symmetric(vertical: 10),
-                      child: Text(
-                        _errorMessage!,
-                        style: TextStyle(color: Colors.red),
-                      ),
-                    ),
-                  SizedBox(height: 20),
-                  _buildTextField(emailController, "E-posta", Icons.email),
-                  SizedBox(height: 15),
-                  _buildTextField(passwordController, "Şifre", Icons.lock, isPassword: true),
-                  SizedBox(height: 25),
-                  ElevatedButton(
-                    onPressed: _loading ? null : _login,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blueAccent,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
-                    ),
-                    child: _loading
-                        ? CircularProgressIndicator(color: Colors.white)
-                        : Text(
-                      "Giriş Yap",
-                      style: GoogleFonts.poppins(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 10),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pushNamed(context, "/register");
-                    },
-                    child: Text(
-                      "Hesabınız yok mu? Kayıt olun",
-                      style: GoogleFonts.poppins(
-                        fontSize: 14,
-                        color: Colors.blueAccent,
-                      ),
-                    ),
+      body: Container(
+        width: double.infinity,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFFe0eafc), Color(0xFFcfdef3)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.95),
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.08),
+                    blurRadius: 15,
+                    offset: const Offset(0, 6),
                   ),
                 ],
+              ),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  children: [
+                    Text(
+                      "👋 Hoş Geldin!",
+                      style: GoogleFonts.poppins(
+                        fontSize: 28,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.indigo,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      "Lütfen giriş yap",
+                      style: GoogleFonts.poppins(fontSize: 16, color: Colors.black54),
+                    ),
+                    const SizedBox(height: 25),
+
+                    if (_errorMessage != null)
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        margin: const EdgeInsets.only(bottom: 16),
+                        decoration: BoxDecoration(
+                          color: Colors.red.shade100,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.error_outline, color: Colors.red),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                _errorMessage!,
+                                style: const TextStyle(color: Colors.red),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                    _buildTextField(emailController, "E-posta", Icons.email_outlined),
+                    const SizedBox(height: 16),
+                    _buildTextField(passwordController, "Şifre", Icons.lock_outline, isPassword: true),
+                    const SizedBox(height: 24),
+
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: _loading ? null : _login,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.indigo,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          elevation: 5,
+                        ),
+                        child: _loading
+                            ? const SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                        )
+                            : Text(
+                          "Giriş Yap",
+                          style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 16, color: Colors.white),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 16),
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.pushNamed(context, "/register");
+                      },
+                      child: Text(
+                        "Hesabınız yok mu? Kayıt olun",
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          color: Colors.indigo,
+                          decoration: TextDecoration.underline,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -137,19 +182,21 @@ class _LoginScreenState extends State<LoginScreen> {
     return TextFormField(
       controller: controller,
       obscureText: isPassword,
+      style: GoogleFonts.poppins(),
       decoration: InputDecoration(
         labelText: label,
-        prefixIcon: Icon(icon, color: Colors.blueAccent),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        prefixIcon: Icon(icon, color: Colors.indigo),
+        filled: true,
+        fillColor: Colors.grey[100],
+        contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 16),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
         focusedBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: Colors.blueAccent, width: 2),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: Colors.indigo, width: 2),
         ),
       ),
       validator: (value) {
-        if (value!.isEmpty) return "$label alanı boş bırakılamaz!";
+        if (value == null || value.isEmpty) return "$label alanı boş bırakılamaz!";
         return null;
       },
     );
