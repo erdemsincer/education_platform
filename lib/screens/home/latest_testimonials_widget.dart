@@ -13,14 +13,14 @@ class _LatestTestimonialsWidgetState extends State<LatestTestimonialsWidget> {
   @override
   void initState() {
     super.initState();
-    _testimonials = ApiService().getTestimonials(); // API'den tüm referansları al
+    _testimonials = ApiService().getTestimonials();
   }
 
   @override
   Widget build(BuildContext context) {
     return Container(
       color: Colors.blueGrey[50],
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -32,32 +32,31 @@ class _LatestTestimonialsWidgetState extends State<LatestTestimonialsWidget> {
               color: Colors.indigo,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
           FutureBuilder<List<Map<String, dynamic>>>(
             future: _testimonials,
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
+                return const Center(child: CircularProgressIndicator(color: Colors.indigo));
               } else if (snapshot.hasError) {
-                return Center(child: Text("Hata: ${snapshot.error}"));
+                return Center(child: Text("❌ Hata: ${snapshot.error}"));
               } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                return const Center(child: Text("Henüz referans bulunamadı."));
+                return const Center(child: Text("🫥 Henüz referans bulunamadı."));
               } else {
                 final testimonials = snapshot.data!;
                 return GridView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
-                  padding: const EdgeInsets.all(8),
+                  itemCount: testimonials.length > 4 ? 4 : testimonials.length,
+                  padding: const EdgeInsets.only(top: 8),
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
-                    crossAxisSpacing: 12,
-                    mainAxisSpacing: 12,
-                    childAspectRatio: 0.78,
+                    mainAxisSpacing: 16,
+                    crossAxisSpacing: 16,
+                    childAspectRatio: 0.75,
                   ),
-                  itemCount: testimonials.length > 4 ? 4 : testimonials.length,
                   itemBuilder: (context, index) {
-                    final testimonial = testimonials[index];
-                    return _buildTestimonialCard(testimonial);
+                    return _buildTestimonialCard(testimonials[index]);
                   },
                 );
               }
@@ -77,43 +76,48 @@ class _LatestTestimonialsWidgetState extends State<LatestTestimonialsWidget> {
       avatar = const NetworkImage("https://via.placeholder.com/150");
     }
 
-    return Card(
-      elevation: 6,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+    return Material(
+      elevation: 5,
+      borderRadius: BorderRadius.circular(16),
+      color: Colors.white,
+      shadowColor: Colors.black12,
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            CircleAvatar(radius: 35, backgroundImage: avatar),
-            const SizedBox(height: 10),
+            CircleAvatar(
+              radius: 35,
+              backgroundImage: avatar,
+              backgroundColor: Colors.grey[200],
+            ),
+            const SizedBox(height: 12),
             Text(
               testimonial['name'],
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
-            const SizedBox(height: 4),
             Text(
               testimonial['title'],
-              style: TextStyle(fontSize: 13, color: Colors.grey[700]),
+              style: const TextStyle(fontSize: 13, color: Colors.black54),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 10),
             Text(
               "\"${testimonial['comment']}\"",
-              style: const TextStyle(fontSize: 13, fontStyle: FontStyle.italic),
+              style: const TextStyle(fontSize: 13, fontStyle: FontStyle.italic, color: Colors.black87),
               textAlign: TextAlign.center,
               maxLines: 3,
               overflow: TextOverflow.ellipsis,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: List.generate(
                 testimonial['star'],
-                    (index) => const Icon(Icons.star, color: Colors.amber, size: 16),
+                    (index) => const Icon(Icons.star_rounded, color: Colors.amber, size: 18),
               ),
             ),
           ],
